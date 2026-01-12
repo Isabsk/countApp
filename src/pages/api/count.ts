@@ -18,7 +18,7 @@ export default async function handler(
 
     if (req.method === 'GET') {
         const value = await client.get(redisKey);
-        res.status(200).json({ count: parseInt(value || '0', 10), teamId });
+        res.status(200).json({ count: parseInt(value || '0', 10), teamId, role: auth.role });
     } else if (req.method === 'POST') {
         const { action } = req.body;
 
@@ -37,7 +37,7 @@ export default async function handler(
             return;
         }
 
-        res.status(200).json({ count: newValue, teamId });
+        res.status(200).json({ count: newValue, teamId, role: auth.role });
     } else {
         res.setHeader('Allow', ['GET', 'POST']);
         res.status(405).end(`Method ${req.method} Not Allowed`);

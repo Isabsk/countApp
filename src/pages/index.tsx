@@ -22,6 +22,10 @@ export default function Home() {
       })
       .then(data => {
         if (data) {
+          if (data.role === 'admin') {
+            router.push('/admin');
+            return;
+          }
           setCount(data.count);
           setTeamInfo(data.teamId);
         }
