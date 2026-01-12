@@ -1,4 +1,4 @@
-export const TEAMS = Array.from({ length: 11 }, (_, i) => ({
+export const TEAMS = Array.from({ length: 20 }, (_, i) => ({
     id: `team${i + 1}`,
     password: `pass${i + 1}`,
 }));

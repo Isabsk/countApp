@@ -19,8 +19,8 @@ export default async function handler(
         const role = isAdmin ? 'admin' : 'team';
         const cookie = serialize('auth', JSON.stringify({ username, role }), {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
-            sameSite: 'strict',
+            secure: true, // Required for sameSite: 'none'
+            sameSite: 'none',
             maxAge: 60 * 60 * 24, // 1 day
             path: '/',
         });
