@@ -26,10 +26,12 @@ export default async function handler(
         if (action === 'increment') {
             newValue = await client.incr(redisKey);
         } else if (action === 'decrement') {
-            newValue = await client.decr(redisKey);
-        } else if (action === 'reset') {
-            await client.set(redisKey, 0);
-            newValue = 0;
+            const current = await client.get(redisKey);
+            if (parseInt(current || '0', 10) > 0) {
+                newValue = await client.decr(redisKey);
+            } else {
+                newValue = 0;
+            }
         } else {
             res.status(400).json({ error: 'Invalid action' });
             return;

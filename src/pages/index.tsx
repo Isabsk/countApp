@@ -24,12 +24,11 @@ export default function Home() {
       });
   }, [router]);
 
-  const updateCount = async (action: 'increment' | 'decrement' | 'reset') => {
+  const updateCount = async (action: 'increment' | 'decrement') => {
     // Optimistic update
     if (count !== null) {
       if (action === 'increment') setCount(prev => (prev as number) + 1);
-      if (action === 'decrement') setCount(prev => (prev as number) - 1);
-      if (action === 'reset') setCount(0);
+      if (action === 'decrement') setCount(prev => (prev as number) > 0 ? (prev as number) - 1 : 0);
     }
 
     try {
@@ -76,10 +75,6 @@ export default function Home() {
               +
             </button>
           </div>
-
-          <button className="btn btn-reset" onClick={() => updateCount('reset')}>
-            Reset Counter
-          </button>
         </div>
       </main>
     </>
