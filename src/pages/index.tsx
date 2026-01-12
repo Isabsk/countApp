@@ -1,14 +1,28 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function Home() {
   const [count, setCount] = useState<number | null>(null);
+  const [teamInfo, setTeamInfo] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/count')
-      .then(res => res.json())
-      .then(data => setCount(data.count));
-  }, []);
+      .then(res => {
+        if (!res.ok) {
+          router.push('/login');
+          return;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data) {
+          setCount(data.count);
+          setTeamInfo(data.teamId);
+        }
+      });
+  }, [router]);
 
   const updateCount = async (action: 'increment' | 'decrement' | 'reset') => {
     // Optimistic update
@@ -24,25 +38,31 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       });
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setCount(data.count);
     } catch (error) {
       console.error('Failed to update count', error);
-      // Revert or fetch actual state on error
+      router.push('/login');
     }
+  };
+
+  const handleLogout = () => {
+    document.cookie = "auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    router.push('/login');
   };
 
   return (
     <>
       <Head>
-        <title>Count App | Premium</title>
-        <meta name="description" content="A beautiful counter application" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Count App | Team {teamInfo}</title>
       </Head>
       <main className="container">
         <div className="card">
-          <h1 className="title">Count App</h1>
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '1rem' }}>
+            <h1 className="title">{teamInfo}</h1>
+            <button className="btn-reset" onClick={handleLogout} style={{ marginTop: 0 }}>Logout</button>
+          </div>
 
           <div className="count-display">
             {count !== null ? count : '...'}
@@ -61,20 +81,6 @@ export default function Home() {
             Reset Counter
           </button>
         </div>
-
-        {/* Background decorations */}
-        <div style={{
-          position: 'absolute',
-          top: '-20%',
-          left: '-10%',
-          width: '500px',
-          height: '500px',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(0,0,0,0) 70%)',
-          borderRadius: '50%',
-          zIndex: -1,
-          filter: 'blur(40px)',
-          animation: 'pulse 5s infinite alternate'
-        }} />
       </main>
     </>
   );
