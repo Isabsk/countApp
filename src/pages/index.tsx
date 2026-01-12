@@ -1,12 +1,36 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState<number | null>(null);
 
-  const increment = () => setCount((prev) => prev + 1);
-  const decrement = () => setCount((prev) => prev - 1);
-  const reset = () => setCount(0);
+  useEffect(() => {
+    fetch('/api/count')
+      .then(res => res.json())
+      .then(data => setCount(data.count));
+  }, []);
+
+  const updateCount = async (action: 'increment' | 'decrement' | 'reset') => {
+    // Optimistic update
+    if (count !== null) {
+      if (action === 'increment') setCount(prev => (prev as number) + 1);
+      if (action === 'decrement') setCount(prev => (prev as number) - 1);
+      if (action === 'reset') setCount(0);
+    }
+
+    try {
+      const res = await fetch('/api/count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      setCount(data.count);
+    } catch (error) {
+      console.error('Failed to update count', error);
+      // Revert or fetch actual state on error
+    }
+  };
 
   return (
     <>
@@ -21,19 +45,19 @@ export default function Home() {
           <h1 className="title">Count App</h1>
 
           <div className="count-display">
-            {count}
+            {count !== null ? count : '...'}
           </div>
 
           <div className="controls">
-            <button className="btn" onClick={decrement} aria-label="Decrease">
+            <button className="btn" onClick={() => updateCount('decrement')} aria-label="Decrease">
               −
             </button>
-            <button className="btn" onClick={increment} aria-label="Increase">
+            <button className="btn" onClick={() => updateCount('increment')} aria-label="Increase">
               +
             </button>
           </div>
 
-          <button className="btn btn-reset" onClick={reset}>
+          <button className="btn btn-reset" onClick={() => updateCount('reset')}>
             Reset Counter
           </button>
         </div>
